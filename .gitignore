@@ -1,0 +1,43 @@
+# =========================================
+# 1. REGLAS PARA LARAVEL (/src)
+# =========================================
+# Bloquear dependencias masivas (miles de archivos)
+src/vendor/
+src/node_modules/
+# Bloquear credenciales y cachés
+src/.env
+src/.env.backup
+src/bootstrap/cache/
+src/storage/
+src/public/build/
+src/public/hot
+
+# =========================================
+# 2. REGLAS PARA WORDPRESS (/src_wp)
+# =========================================
+# Bloquear el núcleo de WordPress (miles de archivos innecesarios)
+src_wp/wp-admin/
+src_wp/wp-includes/
+# Bloquear todos los archivos PHP base de la raíz de WP...
+src_wp/*.php
+# ...EXCEPTO los archivos de configuración que sí necesitamos:
+!src_wp/wp-config-docker.php
+!src_wp/wp-config-sample.php
+
+# Bloquear imágenes o archivos subidos desde el panel de WP
+src_wp/wp-content/uploads/
+# Bloquear traducciones y cachés de WP
+src_wp/wp-content/languages/
+src_wp/wp-content/cache/
+
+# =========================================
+# 3. REGLAS DE DOCKER Y SISTEMA
+# =========================================
+# Bases de datos de Docker (¡pesan muchísimo!)
+mysql/
+db_data/
+postgres_data/
+
+# Archivos de Windows/Mac
+.DS_Store
+Thumbs.db

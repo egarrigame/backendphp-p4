@@ -1,0 +1,55 @@
+# no añadimos versión ya que se usa directamente la última especificaciónd de sintaxis
+
+services:  # se definen los tres contenedores: 'web' para el servidor web, 'db' para base de datos y 'phpma' para la interfaz
+  web:
+    build: .  # trabajaremos con nuestra propia imagen, '.' es el directorio actual, donde tiene que buscar el Dockerfile
+    container_name: bep_web  # nombre del contenedor. 'bep' -> back end productos + nombre contenedor, lo mismo para el resto
+    ports:
+      - "8080:80"  # 8080 puerto local, 80 puerto del contenedor. cuando accedamos al localhopst:8080, docker lleva el tráfico al puerto 80 del contenedor para acceder a la app desde el navegador
+    volumes:
+      - ./src:/var/www/html  # guardamos el código en la carpeta /src y aquí se vincula con la carpeta /var/www/html que está dentro del contenedor (apache lee aquí los archivos). cuando hagamos un cambio en /src se hará también en el servidor web del contenedor
+    depends_on:
+      - db  # el contenedor 'web' sólo se iniciará cuando el contenedor 'db' esté funcionando
+
+  db:
+    image: mysql:8.0
+    container_name: bep_db
+    restart: always  # reinicio automático del contenedor si falla, para que la bbdd siempre sté en fuincionamiento en segundo plano
+    environment:  # variables de entorno para el arranque de la bbdd: crear contraseña root, crear la bbdd llamada 'backend_:ddbb', y el usuario y la contraseña
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: backend_ddbb
+      MYSQL_USER: backend_user
+      MYSQL_PASSWORD: backend_userpassword
+    ports:
+      - "3307:3306"  # puerto standard de mysql, para acceder desde local
+    volumes:
+      - db_data:/var/lib/mysql  # igual que antes pero ahora mapeamos los datos de mysql con 'db_data' para guardarlos en la ruta, así se guardan si se borrara el contenedor ed mysql
+
+  phpma:
+    image: phpmyadmin/phpmyadmin
+    container_name: bep_phpma
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db # referencia para que phpmyadmin sepa a qué servidor de bbdd debe conectarse, que es el contenedor 'db' -> funciona como un dominio de red de docker
+      MYSQL_ROOT_PASSWORD: rootpassword
+    depends_on:
+      - db
+
+  wordpress:
+    image: wordpress:latest  # viene con php y apache
+    container_name: bep_wp
+    ports:
+      - "8082:80"
+    environment:
+      WORDPRESS_DB_HOST: db  # conexión con nuestro host de bbdd
+      WORDPRESS_DB_USER: root
+      WORDPRESS_DB_PASSWORD: rootpassword
+      WORDPRESS_DB_NAME: bbdd_wordpress  # bbdd creada en pohpmyadmin
+    volumes:
+      - ./src_wp:/var/www/html  # creamos esta carpeta para tenerlo a parte para cuando se suban a cloud
+    depends_on:
+      - db
+
+volumes:
+  db_data:  # definición del volumen que referenciamos en el contenedor 'db' para guardar los datos de mysql
